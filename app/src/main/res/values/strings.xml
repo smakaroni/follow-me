@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Follow Me</string>
+    <string name="title_contacts">Contacts</string>
+    <string name="title_follow_me">Follow Me</string>
+    <string name="title_settings">Settings</string>
+</resources>

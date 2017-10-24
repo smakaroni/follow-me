@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:gravity="left|center"
+    android:layout_width="match_parent"
+    android:paddingBottom="10px"
+    android:paddingTop="10px"
+    android:paddingLeft="3px">
+    <TextView
+        android:id="@+id/text1"
+        android:layout_width="70dip"
+        android:scrollHorizontally="true"
+        android:layout_height="match_parent"
+        android:gravity="left"
+        android:layout_weight="1"
+        android:textSize="15dip"
+        android:textStyle="bold"
+        android:textColor="#000"
+        android:paddingLeft="20dip">
+    </TextView>
+
+    <TextView
+        android:id="@+id/text2"
+        android:layout_width="70dip"
+        android:scrollHorizontally="true"
+        android:layout_height="match_parent"
+        android:gravity="left"
+        android:layout_weight="1"
+        android:textSize="15dip"
+        android:textStyle="bold"
+        android:textColor="#000"
+        android:paddingLeft="20dip">
+    </TextView>
+
+</LinearLayout>
+<!--<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    android:layout_width="match_parent"
+    android:scrollHorizontally="false"
+    android:layout_height="match_parent"
+    android:gravity="left"
+    android:layout_weight="1"
+    android:textSize="15dip"
+    android:textStyle="bold"
+    android:textColor="#000"
+    android:paddingLeft="20dip">
+</TextView>-->
+<!--
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:textColor="#ff9000"
+    android:clickable="true"/>-->
