@@ -12,6 +12,7 @@ import com.cqrify.followme.R;
  * Created by Jocke Ådén on 20/10/2017.
  */
 
+// search contacts / show contacts view
 public class ContactsFragment extends Fragment{
 
     public static ContactsFragment newInstance(){

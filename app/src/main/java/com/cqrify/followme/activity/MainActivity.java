@@ -8,12 +8,16 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.ListView;
 
 import com.cqrify.followme.R;
 import com.cqrify.followme.fragment.ContactsFragment;
 import com.cqrify.followme.fragment.ContactListFragment;
 import com.cqrify.followme.fragment.FollowMeFragment;
 import com.cqrify.followme.fragment.SettingsFragment;
+import com.cqrify.followme.model.Contact;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,8 +50,11 @@ public class MainActivity extends AppCompatActivity {
 
     };
 
+    ArrayList<Contact> contacts;
+    ListView listView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -60,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.frame_layout, ContactListFragment.newInstance());
         transaction.commit();
+
     }
 
 }

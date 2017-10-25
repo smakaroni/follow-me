@@ -1,10 +1,16 @@
 package com.cqrify.followme.fragment;
 
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.database.CharArrayBuffer;
+import android.database.ContentObserver;
+import android.content.ContentResolver;
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
@@ -19,6 +25,7 @@ import android.view.ViewGroup;
 import android.provider.ContactsContract;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.cqrify.followme.R;
 import com.cqrify.followme.model.Contact;
@@ -48,6 +55,8 @@ public class ContactListFragment extends Fragment implements
             ContactsContract.Contacts._ID,
             ContactsContract.Contacts.LOOKUP_KEY,
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ? ContactsContract.Contacts.DISPLAY_NAME_PRIMARY : ContactsContract.Contacts.DISPLAY_NAME,
+            ContactsContract.Contacts.HAS_PHONE_NUMBER,
+            ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
     };
 
     private static final int CONTACT_ID_INDEX = 0;
@@ -69,8 +78,8 @@ public class ContactListFragment extends Fragment implements
     long mContactId;
     String mContactKey;
     Uri mContactUri;
-    private SimpleCursorAdapter mCursorAdapter;
-    //private ContactsListItemAdapter mCursorAdapter;
+    // private SimpleCursorAdapter mCursorAdapter;
+    private ContactsListItemAdapter mCursorAdapter;
 
     public static ContactListFragment newInstance(){
         ContactListFragment fragment = new ContactListFragment();
@@ -89,28 +98,8 @@ public class ContactListFragment extends Fragment implements
 
     public void onActivityCreated(Bundle savedInstanceState){
         super.onActivityCreated(savedInstanceState);
-
-        // Gets the ListView from the View list of the parent activity
-        //mContactsList = (ListView) getActivity().findViewById(R.id.contacts_list_view);
         mContactsList = (ListView) getActivity().findViewById(R.id.contact_list);
-
-        mCursorAdapter = new SimpleCursorAdapter(
-                getActivity(),
-                R.layout.contacts_list_item,
-                null,
-                FROM_COLUMNS, TO_IDS,
-                0
-        );
-
         getLoaderManager().initLoader(0, null, this);
-
-        ArrayList<Contact> contacts = new ArrayList<Contact>();
-
-       // mCursorAdapter = new ContactsListItemAdapter(getActivity().getApplicationContext(), contacts);
-
-        mContactsList.setAdapter(mCursorAdapter);
-
-        mContactsList.setOnItemClickListener(this);
 
     }
 
@@ -118,8 +107,8 @@ public class ContactListFragment extends Fragment implements
     public Loader<Cursor> onCreateLoader(int loaderId, Bundle args) {
         mSelectionArgs[0] = "%" + "" + "%"; // "" is future searchstring
         Log.d(LOG_TAG, mSelectionArgs[0]);
-        // start query
-        return new CursorLoader(
+
+        CursorLoader cursorLoader = new CursorLoader(
                 getActivity(),
                 ContactsContract.Contacts.CONTENT_URI,
                 PROJECTION,
@@ -127,21 +116,83 @@ public class ContactListFragment extends Fragment implements
                 mSelectionArgs,
                 null
         );
+
+        return cursorLoader;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mCursorAdapter.swapCursor(data);
+
+        ArrayList<Contact> contacts = new ArrayList<Contact>();
+
+        while(data.moveToNext()){
+
+            ContentResolver cr = getContext().getContentResolver();
+            String id = data.getString(data.getColumnIndex(PROJECTION[0]));
+
+            String number = "";
+            int numbersAmount = 0;
+
+            if (Integer.parseInt(data.getString(
+                    data.getColumnIndex(PROJECTION[3]))) > 0) {
+                Cursor pCur = cr.query(
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        null,
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",
+                        new String[]{id}, null);
+
+                while (pCur.moveToNext()) {
+                    numbersAmount++;
+                    number = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    int type = pCur.getInt(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
+                    switch(type){ // TODO handle multiple numbers
+                        case ContactsContract.CommonDataKinds.Phone.TYPE_HOME:
+                            break;
+                        case ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE:
+                            break;
+                        case ContactsContract.CommonDataKinds.Phone.TYPE_WORK:
+                            break;
+                    }
+                }
+                pCur.close();
+            }
+
+            // TODO Implement
+            if(numbersAmount < 1){
+                number = getString(R.string.no_numbers_found);
+            }else if(numbersAmount > 1){
+                number = getString(R.string.several_numbers_found);
+            }
+
+            Contact contact = new Contact(id,
+                    data.getString(data.getColumnIndex(PROJECTION[1])),
+                    data.getString(data.getColumnIndex(PROJECTION[2])),
+                    number,
+                    data.getString(data.getColumnIndex(PROJECTION[4])));
+
+            contacts.add(contact);
+
+        }
+
+        mCursorAdapter = new ContactsListItemAdapter(getActivity().getApplicationContext(), contacts);
+        mContactsList.setAdapter(mCursorAdapter);
+        mContactsList.setOnItemClickListener(this);
+
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-         mCursorAdapter.swapCursor(null);
+         // mCursorAdapter.swapCursor(null);
     }
 
     @Override
     public void onItemClick(
             AdapterView<?> parent, View item, int position, long rowID) {
-        Log.d(LOG_TAG, "item click.. pos: " + position);
+        Contact contact = (Contact) parent.getItemAtPosition(position);
+        // TODO if contact has more than 1 number, we need to let them choose which number to use
+
+        Toast.makeText(getActivity().getApplicationContext(), contact.toString(), Toast.LENGTH_LONG).show();
+
+        Log.d(LOG_TAG, contact.toString());
     }
 }

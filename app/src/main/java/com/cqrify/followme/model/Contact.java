@@ -5,13 +5,36 @@ package com.cqrify.followme.model;
  */
 
 public class Contact {
+
+    private String id;
+    private String lookupKey;
     private String name;
     private String number;
-    // private Uri imageUri;
+    private String thumbNailUri;
 
-    public Contact(String name, String number){
+
+    public Contact(String id, String lookupKey, String name, String number, String thumbNailUri){
+        this.id = id;
+        this.lookupKey = lookupKey;
         this.name = name;
         this.number = number;
+        this.thumbNailUri = thumbNailUri;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getLookupKey() {
+        return lookupKey;
+    }
+
+    public void setLookupKey(String lookupKey) {
+        this.lookupKey = lookupKey;
     }
 
     public String getName() {
@@ -29,4 +52,22 @@ public class Contact {
     public void setNumber(String number) {
         this.number = number;
     }
+
+    public String getThumbNailUri() {
+        return thumbNailUri;
+    }
+
+    public void setThumbNailUri(String thumbNailUri) {
+        this.thumbNailUri = thumbNailUri;
+    }
+
+    @Override
+    public String toString(){
+        return  "Id=" + id +
+                "\nlookupKey=" + lookupKey +
+                "\nname="+name+
+                "\nnumber="+number+
+                "\nThumbnailUri="+thumbNailUri;
+    }
+
 }
