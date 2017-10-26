@@ -1,19 +1,20 @@
 package com.cqrify.followme.model;
 
+
 /**
  * Created by Jocke Ådén on 20/10/2017.
  */
 
 public class Contact {
 
-    private String id;
+    private long id;
     private String lookupKey;
     private String name;
     private String number;
     private String thumbNailUri;
 
 
-    public Contact(String id, String lookupKey, String name, String number, String thumbNailUri){
+    public Contact(long id, String lookupKey, String name, String number, String thumbNailUri){
         this.id = id;
         this.lookupKey = lookupKey;
         this.name = name;
@@ -21,11 +22,11 @@ public class Contact {
         this.thumbNailUri = thumbNailUri;
     }
 
-    public String getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(long id) {
         this.id = id;
     }
 

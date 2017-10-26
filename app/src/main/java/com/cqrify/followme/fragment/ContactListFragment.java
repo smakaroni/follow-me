@@ -2,11 +2,13 @@ package com.cqrify.followme.fragment;
 
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.database.CharArrayBuffer;
 import android.database.ContentObserver;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.database.DataSetObserver;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,6 +30,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.cqrify.followme.R;
+import com.cqrify.followme.dao.ContactsDAO;
+import com.cqrify.followme.dao.helper.ContactsDbHelper;
 import com.cqrify.followme.model.Contact;
 import com.cqrify.followme.model.ContactsListItemAdapter;
 
@@ -43,12 +47,9 @@ public class ContactListFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>,
         AdapterView.OnItemClickListener {
 
-    private static final String LOG_TAG = ContactListFragment.class.getSimpleName();
+    ContactsDbHelper mDbHelper; // = new ContactsDbHelper(getActivity().getApplicationContext());
 
-    @SuppressLint("InlinedApi")
-    private final static String[] FROM_COLUMNS = {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ? ContactsContract.Contacts.DISPLAY_NAME_PRIMARY : ContactsContract.Contacts.DISPLAY_NAME
-    };
+    private static final String LOG_TAG = ContactListFragment.class.getSimpleName();
 
     @SuppressLint("InlinedApi")
     private static final String[] PROJECTION = {
@@ -58,9 +59,6 @@ public class ContactListFragment extends Fragment implements
             ContactsContract.Contacts.HAS_PHONE_NUMBER,
             ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
     };
-
-    private static final int CONTACT_ID_INDEX = 0;
-    private static final int LOOKUP_KEY_INDEX = 1;
 
     @SuppressLint("InlinedApi")
     private static final String SELECTION =
@@ -75,10 +73,6 @@ public class ContactListFragment extends Fragment implements
             android.R.id.text1
     };
     ListView mContactsList;
-    long mContactId;
-    String mContactKey;
-    Uri mContactUri;
-    // private SimpleCursorAdapter mCursorAdapter;
     private ContactsListItemAdapter mCursorAdapter;
 
     public static ContactListFragment newInstance(){
@@ -94,13 +88,16 @@ public class ContactListFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         return inflater.inflate(R.layout.fragment_contact_list, container, false);
+
     }
 
     public void onActivityCreated(Bundle savedInstanceState){
         super.onActivityCreated(savedInstanceState);
+        // instantiate list and db
         mContactsList = (ListView) getActivity().findViewById(R.id.contact_list);
-        getLoaderManager().initLoader(0, null, this);
+        mDbHelper = new ContactsDbHelper(getActivity().getApplicationContext());
 
+        getLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -164,7 +161,7 @@ public class ContactListFragment extends Fragment implements
                 number = getString(R.string.several_numbers_found);
             }
 
-            Contact contact = new Contact(id,
+            Contact contact = new Contact(0,
                     data.getString(data.getColumnIndex(PROJECTION[1])),
                     data.getString(data.getColumnIndex(PROJECTION[2])),
                     number,
@@ -184,15 +181,23 @@ public class ContactListFragment extends Fragment implements
     public void onLoaderReset(Loader<Cursor> loader) {
          // mCursorAdapter.swapCursor(null);
     }
-
     @Override
     public void onItemClick(
             AdapterView<?> parent, View item, int position, long rowID) {
         Contact contact = (Contact) parent.getItemAtPosition(position);
         // TODO if contact has more than 1 number, we need to let them choose which number to use
 
-        Toast.makeText(getActivity().getApplicationContext(), contact.toString(), Toast.LENGTH_LONG).show();
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
 
-        Log.d(LOG_TAG, contact.toString());
+        values.put(ContactsDAO.ContactsEntry.COLUMN_NAME_LOOKUP_KEY, contact.getLookupKey());
+        values.put(ContactsDAO.ContactsEntry.COLUMN_NAME_NAME, contact.getName());
+        values.put(ContactsDAO.ContactsEntry.COLUMN_NAME_NUMBER, contact.getNumber());
+        values.put(ContactsDAO.ContactsEntry.COLUMN_NAME_THUMBNAIL_URI, contact.getThumbNailUri());
+
+        long newRowId = db.insert(ContactsDAO.ContactsEntry.TABLE_NAME, null, values);
+
+        Toast.makeText(getActivity().getApplicationContext(), "A row was inserted to database. Row id: " + newRowId, Toast.LENGTH_SHORT).show();
+
     }
 }
