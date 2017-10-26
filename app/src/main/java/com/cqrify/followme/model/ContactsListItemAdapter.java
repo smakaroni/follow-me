@@ -2,12 +2,15 @@ package com.cqrify.followme.model;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.net.Uri;
 import android.os.Parcel;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,7 +43,7 @@ public class ContactsListItemAdapter extends ArrayAdapter<Contact> {
 
     private LayoutInflater inflater;
     private ArrayList<Contact> contacts;
-    Context mContext;
+    private Context mContext;
 
     private class ViewHolder {
         TextView name;
@@ -67,8 +70,10 @@ public class ContactsListItemAdapter extends ArrayAdapter<Contact> {
     }
 
     private int lastPosition = -1;
+
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    @NonNull
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         Contact contact = getItem(position);
         ViewHolder viewHolder;
 
@@ -94,15 +99,15 @@ public class ContactsListItemAdapter extends ArrayAdapter<Contact> {
         result.startAnimation(animation);
         lastPosition = position;
 
-
-        viewHolder.name.setText(contact.getName());
+        viewHolder.name.setText(contact.getName()); // TODO May produce NullPointer
         viewHolder.number.setText(contact.getNumber());
+
         if(contact.getThumbNailUri() != null){
-            Log.d(LOG_TAG, "Contact got image: " + contact.getThumbNailUri());
             Uri imageUri = Uri.parse(contact.getThumbNailUri());
             viewHolder.imageView.setImageURI(imageUri);
-        }else{
-
+        }else{ // Set default image if none was found on user
+            Bitmap yourImageNotFoundBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.user_default);
+            viewHolder.imageView.setImageBitmap(yourImageNotFoundBitmap);
         }
         return convertView;
     }
